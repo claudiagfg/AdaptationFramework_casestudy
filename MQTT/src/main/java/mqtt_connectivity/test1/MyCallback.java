@@ -57,72 +57,72 @@ public class MyCallback implements MqttCallback{
 	
 	private void providerNotifier(MqttMessage message) throws IOException, InterruptedException {
 		//Extract fields the provider might be interested in knowing, such as the name, id and 
-				//bundleurl of the new device (given we know the standard of mqtt discovery messages)
-				String jsonString = message.toString();
-				JSONObject obj = new JSONObject(jsonString);
-				String name = obj.getString("name");
-				String id = obj.getString("id");
-				String bundleurl = obj.getString("configuration_url");
-				String data = "{\"name\":\"" + name + "\",\"id\":\"" + id + "\", \"bundle_url\":\"" + bundleurl + "\" }";
-				System.out.println("content is: " + data);
-				
-				//Make a POST Request to the provider's server
-				HttpRequest request = HttpRequest.newBuilder()
-		                .POST(BodyPublishers.ofString(data))
-		                .uri(URI.create("http://54.93.210.112/api/set_status/tfghome_newdevices"))
-		                .header("Content-Type", "application/json")
-		                .build();
-			
-		        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-		        //Print status code
-		        System.out.println(response.statusCode());
-		        //Print response body
-		        System.out.println(response.body());
+		//bundleurl of the new device (given we know the standard of mqtt discovery messages)
+		String jsonString = message.toString();
+		JSONObject obj = new JSONObject(jsonString);
+		String name = obj.getString("name");
+		String id = obj.getString("id");
+		String bundleurl = obj.getString("configuration_url");
+		String data = "{\"name\":\"" + name + "\",\"id\":\"" + id + "\", \"bundle_url\":\"" + bundleurl + "\" }";
+		System.out.println("content is: " + data);
+		
+		//Make a POST Request to the provider's server
+		HttpRequest request = HttpRequest.newBuilder()
+                .POST(BodyPublishers.ofString(data))
+                .uri(URI.create("http://54.93.210.112/api/set_status/tfghome_newdevices"))
+                .header("Content-Type", "application/json")
+                .build();
+	
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        //Print status code
+        System.out.println(response.statusCode());
+        //Print response body
+        System.out.println(response.body());
 	}
 	
 	private void digitalTwinMaker() throws IOException, InterruptedException {
 		
 		// Database must be started right?
 		
-				String url = "jdbc:postgresql://localhost:5432/postgres";
-		        String user = "tfg";
-		        String password = "";
-		        String data = "";
-		        
-		        try (Connection con = DriverManager.getConnection(url, user, password);
-		        		PreparedStatement st = con.prepareStatement("select row_to_json(dev) as devices\n"
-		        				+ "from(\n"
-		        				+ "select d.id, d.home_id, d.area_id, d.device_type_id, d.bundle_url, d.is_active,\n"
-		        				+ "(select json_agg(ctg)\n"
-		        				+ "from (\n"
-		        				+ "select * from categories where id = d.category_id\n"
-		        				+ ") ctg\n"
-		        				+ ") as category,\n"
-		        				+ "(select json_agg(srv)\n"
-		        				+ "from (\n"
-		        				+ "select * from services where id = d.service_id\n"
-		        				+ ") srv\n"
-		        				+ ") as service\n"
-		        				+ "from devices as d) dev;");
-		                ResultSet rs = st.executeQuery()) {
-				        	while (rs.next()) {
-				        	      System.out.print(rs.getString(1));
-				        	      data = rs.getString(1);
-				        	}
-				        	HttpRequest request = HttpRequest.newBuilder()
-			  		                .POST(BodyPublishers.ofString(data))
-			  		                .uri(URI.create("http://54.93.210.112/api/set_status/tfghome_digitaltwin"))
-			  		                .header("Content-Type", "application/json")
-			  		                .build();
-			  			
-			  		        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-			  		        //Print status code
-			  		        System.out.println(response.statusCode());
-			  		        //Print response body
-			  		        System.out.println(response.body());
-		        } catch (SQLException ex) {
-		            System.out.println(ex);
-		        }
+		String url = "jdbc:postgresql://localhost:5432/postgres";
+        String user = "tfg";
+        String password = "";
+        String data = "";
+        
+        try (Connection con = DriverManager.getConnection(url, user, password);
+        		PreparedStatement st = con.prepareStatement("select row_to_json(dev) as devices\n"
+        				+ "from(\n"
+        				+ "select d.id, d.home_id, d.area_id, d.device_type_id, d.bundle_url, d.is_active,\n"
+        				+ "(select json_agg(ctg)\n"
+        				+ "from (\n"
+        				+ "select * from categories where id = d.category_id\n"
+        				+ ") ctg\n"
+        				+ ") as category,\n"
+        				+ "(select json_agg(srv)\n"
+        				+ "from (\n"
+        				+ "select * from services where id = d.service_id\n"
+        				+ ") srv\n"
+        				+ ") as service\n"
+        				+ "from devices as d) dev;");
+                ResultSet rs = st.executeQuery()) {
+		        	while (rs.next()) {
+		        	      System.out.print(rs.getString(1));
+		        	      data = rs.getString(1);
+		        	}
+		        	HttpRequest request = HttpRequest.newBuilder()
+	  		                .POST(BodyPublishers.ofString(data))
+	  		                .uri(URI.create("http://54.93.210.112/api/set_status/tfghome_digitaltwin"))
+	  		                .header("Content-Type", "application/json")
+	  		                .build();
+	  			
+	  		        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+	  		        //Print status code
+	  		        System.out.println(response.statusCode());
+	  		        //Print response body
+	  		        System.out.println(response.body());
+        } catch (SQLException ex) {
+            System.out.println(ex);
+        }
 	}
 	
 }
