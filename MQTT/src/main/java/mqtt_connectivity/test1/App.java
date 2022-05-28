@@ -10,9 +10,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class App 
 {
-	public static MqttAsyncClient myClient;
-	//public static String clientID = UUID.randomUUID().toString();
-	//public static MemoryPersistence persistence = new MemoryPersistence();  	   
+	public static MqttAsyncClient myClient; 	   
 	
     public static void main( String[] args ) throws MqttException
     { 	
