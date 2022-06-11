@@ -1,0 +1,8 @@
+Bundle-Name: Controller
+Bundle-SymbolicName: Controller
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: Controller.ControllerActivator
+Import-Package: org.osgi.framework
+Export-Package: Controller
+
+ 
