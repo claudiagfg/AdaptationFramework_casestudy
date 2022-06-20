@@ -1,7 +1,0 @@
-Bundle-Name: level1
-Bundle-SymbolicName: level1
-Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: level1.Activator
-Import-Package: org.osgi.framework, level1.stoveService
-Export-Package: level1
- 

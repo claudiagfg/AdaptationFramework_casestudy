@@ -22,7 +22,7 @@ public class App
         IMqttToken token = myClient.connect();
         token.waitForCompletion();
         
-        myClient.subscribe("tfghome/discovery", 0);
+        myClient.subscribe("discovery/#", 0);
     }
     
 }

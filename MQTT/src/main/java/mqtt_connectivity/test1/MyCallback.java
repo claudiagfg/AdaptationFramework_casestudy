@@ -68,7 +68,9 @@ public class MyCallback implements MqttCallback{
 		String jsonString = message.toString();
 		JSONObject obj = new JSONObject(jsonString);
 		String name = obj.getString("name");
-		String devtype = obj.getString("main_feature");
+		Integer commercial_id = obj.getInt("id");
+		String model = obj.getString("model");
+		String sw_version = obj.getString("sw_version");
 		String manufacturer = obj.getString("manufacturer");
 		String bundleurl = obj.getString("configuration_url"); 
 		String data = "";
@@ -82,9 +84,9 @@ public class MyCallback implements MqttCallback{
 		         while (rs.next()) {
 		        	 System.out.println("Number of devices before: " + rs.getString(1));
 		         }
-		         String sql = "insert into devices(home_id, name, "
-		    				+ "bundle_url, manufacturer, device_type) values(1,'"+ name+ "','" + bundleurl + "','" 
-		    				+ manufacturer + "','" + devtype + "');";
+		         String sql = "insert into devices(home_id, name, commercial_id, bundle_url, model,"
+		    				+ "manufacturer, sw_version, is_active) values(1,'"+ name+ "'," + commercial_id + ",'"+ bundleurl + "','" 
+		    				+ model+ "','" +manufacturer + "','" + sw_version + "', true);";
 		         stt.executeUpdate(sql);
 		         System.out.println("Successfully inserted device");
 		         ResultSet rs2 = stt.executeQuery(sql2);
@@ -111,8 +113,7 @@ public class MyCallback implements MqttCallback{
 		String model = obj.getString("model");
 		String sw_version = obj.getString("sw_version");
 		String main_feature = obj.getString("main_feature");
-		String data = "{\"name\":\"" + name + "\",\"id\":" + id + ", \"main_feature\":\"" 
-				+ main_feature + "\"," + "\"manufacturer\":\"" + manufacturer + "\", "
+		String data = "{\"name\":\"" + name + "\",\"id\":" + id + ", \"manufacturer\":\"" + manufacturer + "\", "
 				+ "\"sw_version\":\"" + sw_version + "\", \"model\":\"" + model +"\"}";
 		System.out.println("content is: " + data);
 		
@@ -215,17 +216,17 @@ public class MyCallback implements MqttCallback{
         try (Connection con = DriverManager.getConnection(url, user, password);
         		PreparedStatement st = con.prepareStatement("select json_agg(dev) as device\n"
         				+ "from(\n"
-        				+ "  select d.id, d.name, d.area_id, d.device_type, d.bundle_url, d.is_active,\n"
+        				+ "  select d.id, d.name, d.area_id, d.commercial_id, d.bundle_url, d.model, d.sw_version, d.is_active,\n"
         				+ "  (select json_agg(ctg)\n"
         				+ "    from (\n"
-        				+ "      select distinct categories.name from categories \n"
+        				+ "      select distinct categories.name, categories.id from categories \n"
         				+ "      JOIN device_category on categories.id= device_category.category_id\n"
         				+ "      join devices on d.id = device_category.device_id\n"
         				+ "    ) ctg\n"
         				+ "  ) as categories,\n"
         				+ "  (select json_agg(srv)\n"
         				+ "    from (\n"
-        				+ "      select distinct services.name from services\n"
+        				+ "      select distinct services.name, services.id from services\n"
         				+ "    JOIN device_service on services.id= device_service.service_id\n"
         				+ "    join devices on d.id = device_service.device_id\n"
         				+ "    ) srv\n"

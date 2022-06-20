@@ -34,8 +34,8 @@ public class ControllerActivator implements BundleActivator {
 		
 		my_context = context;
 		
-		TimerTask tt = new TimerTask() {  
-		    @Override  
+		TimerTask tt = new TimerTask() {
+			@Override  
 		    public void run() {  
 		        /* This is a periodic task that's run every 1 second with a delay of 0.5 seconds
 		         * First, it analyzes the bundles that exist in the framework and it makes a list of their
@@ -51,36 +51,33 @@ public class ControllerActivator implements BundleActivator {
 					}
 				}
 				/* Then, the list of bundles is combed through, paying attention to their states. If the
-				 * state of one bundle is "INSTALLED", which would mean it has just been installed in the
-				 * framework, the framework restarts all bundles, in hopes that the newly installed bundle
-				 * resolves some of the already installed bundles' dependencies.
+				 * state of one bundle is "INSTALLED", it means it has either (a) just been installed in the
+				 * framework or (b) installed but hasn't resolved its dependencies. The framework restarts these 
+				 * bundles, in hopes that the will start and become active. These activations might also 
+				 * resolve some of the already installed bundles' dependencies.
 				 * */
 				for (Bundle bundle : bnds) {
 					if (bundle.getState() == Bundle.INSTALLED) { 
-						//System.out.println(bundle.getBundleId() + " is installed");
-						for (Bundle b: bnds) {
-							if ( (b.getBundleId() != my_context.getBundle().getBundleId()) && (b.getState() != Bundle.RESOLVED)) {
-								/* The controller has no way of knowing which bundles have unresolved dependencies depending on the new bundle. it restarts ALL 
-								 * bundles in the framework, except for the RESOLVED ones. This means that if one bundle is stopped but isn't uninstalled and 
-								 * its dependencies are all resolved, its state will change to RESOLVED (because of the osgi lifecycle), and as soon as the 
-								 * controller triggers the start of the bundles (because it detects that some new bundle has been installed), it will skip that 
-								 * stopped bundle because it will be able to understand that all its dependencies are resolved so it could not possibly benefit 
-								 * from the newly installed bundle.  
-								 * 
-								 * In addition, the controller must also skip starting itself, it would make no sense.
-								 * */
-								try {
-									b.start();
-								}catch(Exception e) {
-									//e.printStackTrace();
-								}
-							}
-						}
-					break;// It's enough for one bundle to have the "installed" state for the framework to try restart all bundles
+						try {
+							bundle.start();
+						} catch(Exception e) {}
 					}
 				}   
-		        
-		    };
+				for (Bundle b: bnds) {
+					if (b.getState() == Bundle.RESOLVED && b.getBundleId() != my_context.getBundle().getBundleId()) {
+						/* Now that all installed bundles have been started, the controller focuses its attention on all bundles that are RESOLVED, which might 
+						 * not have been previous to the start of all installed bundles. It restarts ALL of them and handle any possible errors..
+						 * The controller does not contemplate that a service bundle be stopped but not uninstalled. In addition, the controller must also skip 
+						 * starting itself, it would make no sense.
+						 * */
+						try {
+							b.start();
+						}catch(Exception e) {
+							//e.printStackTrace();
+						}
+					}
+				}
+			};
 		};  
 		System.out.println("Starting to listen for bundles.");
 		t.scheduleAtFixedRate(tt,500,1000);  
